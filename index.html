@@ -1,220 +1,308 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>DApp Storage</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Decentralised Storage DApp - Dark Responsive</title>
+
+  <!-- web3 -->
   <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background: #f4f6f9;
+    :root{
+      --bg:#071028;
+      --panel:#0e2135;
+      --muted:#8ea0b3;
+      --accent1: #6EE7D9;
+      --accent2: #6AA8FF;
+      --card:#0a2739;
+      --glass: rgba(255,255,255,0.03);
+      --radius:16px;
     }
-    h2, h3 {
-      color: #333;
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 500px at 10% 10%, rgba(40,120,160,0.06), transparent),
+                  linear-gradient(180deg, var(--bg), #041027 120%);
+      color: #e6f0fb;
+      padding:28px;
+      display:flex;
+      justify-content:center;
     }
+
+    .wrap{ width: min(1200px, 96%); }
+
+    /* Header */
+    .hero{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      border-radius: var(--radius);
+      padding: 28px;
+      border: 1px solid rgba(255,255,255,0.03);
+      box-shadow: 0 8px 30px rgba(2,10,20,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+      display:flex;
+      gap:20px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+    }
+    .hero-left{ flex:1 1 420px; min-width:280px; }
+    .hero-right{ display:flex; gap:12px; align-items:center; justify-content:flex-end; flex:0 0 360px; min-width:220px; }
+
+    .title{ font-size:44px; margin:0 0 12px; font-weight:700; }
+    .subtitle{ color:var(--muted); margin:6px 0 16px; font-size:15px; }
+
+    .pills{ display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+    .pill{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      padding:8px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.03);
+      font-size:14px;
+      color:var(--muted);
+    }
+
+    .status{ display:flex; gap:8px; align-items:center; margin-top:12px; color:var(--muted); }
+
+    .actions{ display:flex; gap:10px; flex-wrap:wrap; }
     .btn {
-      padding: 10px 18px;
-      margin: 8px;
-      cursor: pointer;
-      border: none;
-      border-radius: 8px;
-      background: #4CAF50;
-      color: white;
-      font-size: 14px;
-      transition: background 0.3s;
+      border: none; cursor:pointer; padding:10px 16px; border-radius:12px;
+      font-weight:600; font-size:14px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+      transition: transform .14s ease, box-shadow .14s ease;
     }
-    .btn:hover {
-      background: #45a049;
+    .btn:active{ transform: translateY(1px) }
+    .btn-ghost{ background: transparent; border: 1px solid rgba(255,255,255,0.04); color: var(--muted); }
+    .btn-primary{
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+      color: #01202a;
+      padding:10px 18px;
+      box-shadow: 0 10px 30px rgba(45,130,210,0.12);
     }
-    .container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-top: 15px;
+
+    /* Upload grid */
+    .grid{
+      margin-top:20px;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:18px;
     }
-    .card {
-      border: 1px solid #ccc;
-      padding: 12px;
-      border-radius: 10px;
-      background: white;
-      box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
-      flex: 1 1 250px;
-      max-width: 320px;
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.015));
+      border-radius:14px;
+      padding:16px;
+      border: 1px solid rgba(255,255,255,0.03);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+      min-height:120px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
     }
-    .stored-image, video, audio {
-      max-width: 100%;
-      border-radius: 6px;
+    .card label{ font-size:14px; color:var(--muted); }
+
+    input[type="file"]{
+      background: transparent; color:var(--muted);
+      border-radius:10px; padding:8px 10px;
+      border:1px dashed rgba(255,255,255,0.04); width:100%;
     }
-    textarea {
-      width: 100%;
-      height: 60px;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      resize: none;
-      margin-top: 6px;
+    textarea{
+      width:100%; min-height:70px; resize:none; padding:10px;
+      border-radius:10px; border:1px solid rgba(255,255,255,0.03);
+      background: rgba(255,255,255,0.01); color: #eaf6ff;
     }
-    input[type="file"] {
-      margin-top: 6px;
+
+    /* Stored items */
+    .items-header{ display:flex; justify-content:space-between; margin-top:20px; }
+    #storedItems{ margin-top:12px; display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; }
+
+    .stored-card{
+      position: relative;
+      border-radius:14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.03));
+      border:1px solid rgba(255,255,255,0.05);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.6);
+      min-height:140px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      transition: transform .25s ease, box-shadow .25s ease;
     }
-    .stored-text {
-      background: #f9f9f9;
-      padding: 8px;
-      border-radius: 6px;
-      font-size: 14px;
-      color: #333;
+    .stored-card:hover{
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 10px 32px rgba(0,0,0,0.75), 0 0 12px rgba(110,231,217,0.4);
     }
-    #storedItems {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-top: 15px;
+    .stored-card img, .stored-card video, .stored-card audio{
+      width:100%; height:100%; object-fit:cover; border-radius:12px;
     }
-    #walletAddress {
-      font-weight: bold;
-      color: #2c3e50;
+    .stored-text{
+      padding:14px; color:#eaf6ff; font-size:14px; line-height:1.4;
+      background: rgba(255,255,255,0.02); border-radius:10px;
+      width:100%; height:100%; overflow-y:auto;
     }
-    #connStatus {
-      margin: 6px 0;
+
+    /* responsive */
+    @media (max-width:1000px){ .grid{ grid-template-columns: repeat(2, 1fr); } #storedItems{ grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width:700px){ .grid{ grid-template-columns:1fr; } #storedItems{ grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width:420px){ #storedItems{ grid-template-columns:1fr; } }
+
+    .muted{ color:var(--muted); font-size:13px; }
+    .network-box{
+      background: linear-gradient(90deg, rgba(255,255,255,0.015), transparent);
+      padding:8px 12px; border-radius:10px;
+      border:1px solid rgba(255,255,255,0.02);
+      color:var(--muted); font-size:13px;
     }
   </style>
 </head>
 <body>
-  <h2>📦 Decentralized Storage DApp</h2>
-  <button id="connectWallet" class="btn">Connect to Wallet</button>
-  <p id="walletAddress"></p>
-  <p id="connStatus">◻️ Not connected</p>
+  <div class="wrap">
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-left">
+        <h1 class="title">Decentralised<br/>data storage</h1>
+        <p class="subtitle">Upload files & text to IPFS and register CIDs on-chain.</p>
+        <div class="pills">
+          <div class="pill">📷 Image</div>
+          <div class="pill">🎞 Video</div>
+          <div class="pill">📄 Document</div>
+          <div class="pill">🎵 Audio</div>
+        </div>
+        <div class="status">
+          <input type="checkbox" id="connCheck"/> <label for="connCheck">Not connected</label>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div>
+          <div id="walletAddress" class="muted network-box">Not connected</div>
+          <div id="connStatus" class="muted" style="margin-top:8px">Security tip: don't expose API keys.</div>
+        </div>
+        <div class="actions">
+          <button id="connectWallet" class="btn btn-primary">Connect Wallet</button>
+          <button id="downloadBtn" class="btn btn-ghost">Download</button>
+        </div>
+      </div>
+    </div>
 
-  <h3>Upload Files</h3>
-  <div class="container">
-    <div class="card">
-      <label>Upload Image:</label>
-      <input type="file" id="imageInput" accept="image/*">
-      <button class="btn" onclick="handleUpload('imageInput','image')">Upload</button>
+    <!-- Upload grid -->
+    <div class="grid">
+      <div class="card">
+        <label>Upload Image</label>
+        <input type="file" id="imageInput" accept="image/*">
+        <button class="btn btn-primary" onclick="handleUpload('imageInput','image')">Upload Image</button>
+      </div>
+      <div class="card">
+        <label>Upload Text</label>
+        <textarea id="textInput" placeholder="Enter text to store"></textarea>
+        <button class="btn btn-primary" onclick="handleTextUpload()">Upload Text</button>
+      </div>
+      <div class="card">
+        <label>Upload Video</label>
+        <input type="file" id="videoInput" accept="video/*">
+        <button class="btn btn-primary" onclick="handleUpload('videoInput','video')">Upload Video</button>
+      </div>
+      <div class="card">
+        <label>Upload Audio</label>
+        <input type="file" id="audioInput" accept="audio/*">
+        <button class="btn btn-primary" onclick="handleUpload('audioInput','audio')">Upload Audio</button>
+      </div>
+      <div class="card">
+        <label>Upload Document</label>
+        <input type="file" id="docInput" accept=".pdf,.doc,.docx,.txt">
+        <button class="btn btn-primary" onclick="handleUpload('docInput','document')">Upload Document</button>
+      </div>
+      <div class="card">
+        <label>Stored Files</label>
+        <button class="btn btn-ghost" onclick="handleViewItems()">View My Files</button>
+        <div class="muted">Latest: <span id="latest" style="color:var(--accent1)">Nothing yet.</span></div>
+      </div>
     </div>
-    <div class="card">
-      <label>Upload Text:</label>
-      <textarea id="textInput" placeholder="Enter text"></textarea>
-      <button class="btn" onclick="handleTextUpload()">Upload</button>
+
+    <!-- Stored Items -->
+    <div class="items-header">
+      <h3>My Stored Files</h3>
+      <div class="muted">Click "View My Files" to load</div>
     </div>
-    <div class="card">
-      <label>Upload Video:</label>
-      <input type="file" id="videoInput" accept="video/*">
-      <button class="btn" onclick="handleUpload('videoInput','video')">Upload</button>
-    </div>
-    <div class="card">
-      <label>Upload Audio:</label>
-      <input type="file" id="audioInput" accept="audio/*">
-      <button class="btn" onclick="handleUpload('audioInput','audio')">Upload</button>
-    </div>
-    <div class="card">
-      <label>Upload Document:</label>
-      <input type="file" id="docInput" accept=".pdf,.doc,.docx,.txt">
-      <button class="btn" onclick="handleUpload('docInput','document')">Upload</button>
-    </div>
+    <div id="storedItems"></div>
   </div>
 
-  <h3>My Stored Files</h3>
-  <button class="btn" onclick="handleViewItems()">View My Files</button>
-  <div id="storedItems"></div>
+  <!-- JS -->
+  <script>
+    let web3, contract, userAccount;
+    const contractABI = [
+      {"inputs":[{"internalType":"string","name":"_cid","type":"string"},{"internalType":"string","name":"_fileType","type":"string"}],"name":"uploadFile","outputs":[],"stateMutability":"nonpayable","type":"function"},
+      {"inputs":[],"name":"myFileCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+      {"inputs":[{"internalType":"uint256","name":"_index","type":"uint256"}],"name":"myFile","outputs":[{"internalType":"string","name":"","type":"string"},{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}
+    ];
+    const contractAddress = "0x47c81ab5e1E14aaBCb6A223b86495de8DaA10Ec1";
 
-<script>
-let web3, contract, userAccount;
-const contractABI = [
-  {"inputs":[{"internalType":"string","name":"_cid","type":"string"},{"internalType":"string","name":"_fileType","type":"string"}],
-   "name":"uploadFile","outputs":[],"stateMutability":"nonpayable","type":"function"},
-  {"inputs":[],"name":"myFileCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],
-   "stateMutability":"view","type":"function"},
-  {"inputs":[{"internalType":"uint256","name":"_index","type":"uint256"}],
-   "name":"myFile","outputs":[{"internalType":"string","name":"","type":"string"},{"internalType":"string","name":"","type":"string"}],
-   "stateMutability":"view","type":"function"}
-];
+    const PINATA_API_KEY = "your_api_key";
+    const PINATA_SECRET  = "your_api_secret";
 
-// ✅ Hardcoded Your Deployed Contract Address
-const contractAddress = "0x47c81ab5e1E14aaBCb6A223b86495de8DaA10Ec1";
+    function $(id){return document.getElementById(id);}
+    function setConn(msg){ $("connStatus").textContent = msg; }
+    function fileUrlFromCID(cid){ return `https://gateway.pinata.cloud/ipfs/${cid}`; }
 
-// ✅ Pinata Keys
-const PINATA_API_KEY = "30d2d7cfbf6204b6ee0f";
-const PINATA_SECRET  = "699aef360df3d641ee180234b659f18b72c08e05fb1984ce1137bce12c30d20c";
-
-function $(id){return document.getElementById(id);}
-function setConn(msg){$("connStatus").textContent = msg;}
-function fileUrlFromCID(cid){return `https://gateway.pinata.cloud/ipfs/${cid}`;}
-
-async function connectWallet(){
-  const provider = window.ethereum || window.okxwallet?.ethereum;
-  if(!provider){alert("Install MetaMask or OKX Wallet."); return;}
-  try{
-    const accounts = await provider.request({ method:'eth_requestAccounts' });
-    userAccount = accounts[0];
-    web3 = new Web3(provider);
-    contract = new web3.eth.Contract(contractABI, contractAddress);
-    $("walletAddress").textContent = `Connected: ${userAccount}`;
-    setConn("✅ Connected");
-  }catch(err){console.error(err); setConn("❌ Connection failed");}
-}
-$("connectWallet").onclick = connectWallet;
-
-async function uploadFileToIPFS(file){
-  const url = "https://api.pinata.cloud/pinning/pinFileToIPFS";
-  const formData = new FormData();
-  formData.append("file", file);
-  const res = await fetch(url,{method:"POST",headers:{
-    'pinata_api_key': PINATA_API_KEY,
-    'pinata_secret_api_key': PINATA_SECRET
-  },body:formData});
-  const jr = await res.json(); return jr.IpfsHash;
-}
-async function uploadJSONtoIPFS(jsonData){
-  const url="https://api.pinata.cloud/pinning/pinJSONToIPFS";
-  const res = await fetch(url,{method:"POST",headers:{
-    "Content-Type":"application/json",
-    'pinata_api_key': PINATA_API_KEY,
-    'pinata_secret_api_key': PINATA_SECRET
-  },body:JSON.stringify(jsonData)});
-  const jr=await res.json(); return jr.IpfsHash;
-}
-async function storeCID(cid,type){
-  await contract.methods.uploadFile(cid,type).send({from:userAccount});
-}
-async function handleUpload(inputId,type){
-  const input=$(inputId);
-  if(!input.files.length){alert("Select a file");return;}
-  const file=input.files[0];
-  const cid=await uploadFileToIPFS(file);
-  await storeCID(cid,type);
-  alert(type+" uploaded successfully!");
-}
-async function handleTextUpload(){
-  const text=$("textInput").value;
-  if(!text){alert("Enter text");return;}
-  const cid=await uploadJSONtoIPFS({message:text});
-  await storeCID(cid,"text");
-  alert("Text uploaded successfully!");
-}
-async function handleViewItems(){
-  const count=await contract.methods.myFileCount().call({from:userAccount});
-  const nodes=[];
-  for(let i=0;i<count;i++){
-    const [cid,ftype]=await contract.methods.myFile(i).call({from:userAccount});
-    const url=fileUrlFromCID(cid);
-    if(ftype==="image"){
-      nodes.push(`<div class="card"><img class="stored-image" src="${url}"></div>`);
-    }else if(ftype==="video"){
-      nodes.push(`<div class="card"><video controls><source src="${url}"></video></div>`);
-    }else if(ftype==="audio"){
-      nodes.push(`<div class="card"><audio controls src="${url}"></audio></div>`);
-    }else if(ftype==="document"){
-      nodes.push(`<div class="card"><a href="${url}" target="_blank">📄 Open Document</a></div>`);
-    }else if(ftype==="text"){
-      try{const jr=await (await fetch(url)).json();
-        nodes.push(`<div class="card stored-text">${jr.message}</div>`);}
-      catch{nodes.push(`<div class="card stored-text">[text item]</div>`);}
+    async function connectWallet(){
+      const provider = window.ethereum;
+      if(!provider){ alert("Install MetaMask."); return; }
+      const accounts = await provider.request({ method:'eth_requestAccounts' });
+      userAccount = accounts[0];
+      web3 = new Web3(provider);
+      contract = new web3.eth.Contract(contractABI, contractAddress);
+      $("walletAddress").textContent = `Connected: ${userAccount}`;
+      setConn("✅ Connected"); $("connCheck").checked = true;
     }
-  }
-  $("storedItems").innerHTML=nodes.join('');
-}
-</script>
+    $("connectWallet").onclick = connectWallet;
+
+    async function uploadFileToIPFS(file){
+      const url = "https://api.pinata.cloud/pinning/pinFileToIPFS";
+      const formData = new FormData(); formData.append("file", file);
+      const res = await fetch(url,{method:"POST",headers:{'pinata_api_key': PINATA_API_KEY,'pinata_secret_api_key': PINATA_SECRET},body:formData});
+      return (await res.json()).IpfsHash;
+    }
+    async function uploadJSONtoIPFS(jsonData){
+      const url="https://api.pinata.cloud/pinning/pinJSONToIPFS";
+      const res = await fetch(url,{method:"POST",headers:{"Content-Type":"application/json",'pinata_api_key': PINATA_API_KEY,'pinata_secret_api_key': PINATA_SECRET},body:JSON.stringify(jsonData)});
+      return (await res.json()).IpfsHash;
+    }
+    async function storeCID(cid,type){ await contract.methods.uploadFile(cid,type).send({from:userAccount}); }
+
+    async function handleUpload(inputId,type){
+      const file=$(inputId).files[0]; if(!file){ alert("Select a file"); return; }
+      setConn("Uploading...");
+      const cid=await uploadFileToIPFS(file);
+      await storeCID(cid,type);
+      $("latest").textContent = `${type} / ${cid}`;
+      setConn("✅ Uploaded");
+    }
+    async function handleTextUpload(){
+      const text=$("textInput").value; if(!text){ alert("Enter text"); return; }
+      const cid=await uploadJSONtoIPFS({message:text});
+      await storeCID(cid,"text");
+      $("latest").textContent = `text / ${cid}`;
+      setConn("✅ Text Uploaded");
+    }
+    async function handleViewItems(){
+      const count = await contract.methods.myFileCount().call({from:userAccount});
+      const nodes = [];
+      for(let i=0;i<count;i++){
+        const res = await contract.methods.myFile(i).call({from:userAccount});
+        const cid = res[0]; const ftype = res[1]; const url = fileUrlFromCID(cid);
+        if(ftype==="image"){ nodes.push(`<div class="stored-card"><img src="${url}"></div>`); }
+        else if(ftype==="video"){ nodes.push(`<div class="stored-card"><video controls src="${url}"></video></div>`); }
+        else if(ftype==="audio"){ nodes.push(`<div class="stored-card"><audio controls src="${url}"></audio></div>`); }
+        else if(ftype==="document"){ nodes.push(`<div class="stored-card"><a href="${url}" target="_blank">📄 Open Document</a></div>`); }
+        else if(ftype==="text"){
+          try{ const jr=await (await fetch(url)).json(); nodes.push(`<div class="stored-card"><div class="stored-text">${jr.message}</div></div>`); }
+          catch{ nodes.push(`<div class="stored-card"><div class="stored-text">[text item]</div></div>`); }
+        }
+      }
+      $("storedItems").innerHTML = nodes.join('');
+      setConn("✅ Items Loaded");
+    }
+    $("downloadBtn").onclick = ()=>alert("Download placeholder");
+  </script>
 </body>
 </html>
